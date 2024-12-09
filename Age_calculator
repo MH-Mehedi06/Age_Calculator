@@ -1,0 +1,179 @@
+import sys
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
+                            QLabel, QCalendarWidget)
+from PyQt5.QtCore import QDate, Qt, QPropertyAnimation, QRect, QEasingCurve, QTimer, QPoint
+from PyQt5.QtGui import QPalette, QColor, QFont, QLinearGradient
+from datetime import date
+
+class AgeCalculator(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Age Calculator")
+        self.setFixedSize(900, 900)
+        
+        # Enhanced gradient background
+        gradient = QLinearGradient(0, 0, 0, 900)
+        gradient.setColorAt(0.0, QColor(116, 185, 255))  # Bright blue
+        gradient.setColorAt(0.5, QColor(162, 210, 255))  # Light blue
+        gradient.setColorAt(1.0, QColor(240, 248, 255))  # Alice Blue
+        
+        palette = self.palette()
+        palette.setBrush(QPalette.Window, gradient)
+        self.setPalette(palette)
+        
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+        self.main_layout = QVBoxLayout(central_widget)
+        self.main_layout.setSpacing(40)
+        self.main_layout.setContentsMargins(50, 50, 50, 50)
+        
+        # Enhanced title setup
+        self.title_label = QLabel("Age Calculator")
+        self.title_label.setAlignment(Qt.AlignCenter)
+        self.title_label.setFont(QFont("Arial", 36, QFont.Bold))
+        self.title_label.setStyleSheet("""
+            color: #1a365d;
+            padding: 25px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+        """)
+        self.main_layout.addWidget(self.title_label)
+        
+        # Enhanced calendar setup
+        self.calendar = QCalendarWidget()
+        self.calendar.setGridVisible(True)
+        self.calendar.setMaximumDate(QDate.currentDate())
+        self.calendar.setMinimumHeight(400)
+        self.calendar.setStyleSheet("""
+            QCalendarWidget {
+                background-color: rgba(255, 255, 255, 0.9);
+                border-radius: 15px;
+                border: 2px solid #4a90e2;
+            }
+            QCalendarWidget QToolButton {
+                color: #1a365d;
+                font-size: 16px;
+                background-color: rgba(255, 255, 255, 0.9);
+                border-radius: 5px;
+                min-width: 80px;
+                min-height: 30px;
+                padding: 5px;
+            }
+            QCalendarWidget QToolButton:hover {
+                background-color: #4a90e2;
+                color: white;
+            }
+            QCalendarWidget QMenu {
+                background-color: white;
+                border: 1px solid #4a90e2;
+                font-size: 16px;
+            }
+            QCalendarWidget QSpinBox {
+                font-size: 16px;
+                min-height: 30px;
+            }
+            QCalendarWidget QTableView {
+                selection-background-color: #4a90e2;
+                selection-color: white;
+                font-size: 14px;
+                outline: none;
+            }
+            QCalendarWidget QTableView:enabled {
+                color: #1a365d;
+            }
+            QCalendarWidget QTableView:disabled {
+                color: #999999;
+            }
+        """)
+        self.main_layout.addWidget(self.calendar)
+        
+        # Enhanced results container
+        self.results_widget = QWidget()
+        self.results_layout = QVBoxLayout(self.results_widget)
+        self.results_layout.setSpacing(20)
+        
+        # Enhanced result labels
+        self.result_labels = []
+        labels_text = ["Years", "Months", "Days"]
+        for text in labels_text:
+            label = QLabel(f"-- {text} --")
+            label.setAlignment(Qt.AlignCenter)
+            label.setFont(QFont("Arial", 18, QFont.Bold))
+            label.setMinimumHeight(60)
+            label.setStyleSheet("""
+                color: #1a365d;
+                background-color: rgba(255, 255, 255, 0.9);
+                padding: 15px 30px;
+                border: 2px solid #4a90e2;
+                border-radius: 12px;
+                margin: 5px 50px;
+            """)
+            self.result_labels.append(label)
+            self.results_layout.addWidget(label)
+        
+        self.main_layout.addWidget(self.results_widget)
+        
+        # Connect calendar signal
+        self.calendar.clicked.connect(self.calculate_age)
+
+    def calculate_age(self):
+        birth_date = self.calendar.selectedDate().toPyDate()
+        today = date.today()
+        
+        years = today.year - birth_date.year
+        months = today.month - birth_date.month
+        days = today.day - birth_date.day
+        
+        if days < 0:
+            months -= 1
+            days += 30
+        if months < 0:
+            years -= 1
+            months += 12
+            
+        values = [
+            (years, "Years"),
+            (months, "Months"),
+            (days, "Days")
+        ]
+        
+        for i, ((value, unit), label) in enumerate(zip(values, self.result_labels)):
+            label.setText(f"{value} {unit}")
+            QTimer.singleShot(i * 200, lambda l=label: self.animate_label(l))
+            
+    def animate_label(self, label):
+        anim = QPropertyAnimation(label, b"geometry")
+        anim.setDuration(300)
+        
+        current_geo = label.geometry()
+        
+        start_geo = QRect(
+            current_geo.x() + current_geo.width() // 8,
+            current_geo.y(),
+            current_geo.width() * 3 // 4,
+            current_geo.height()
+        )
+        
+        anim.setStartValue(start_geo)
+        anim.setEndValue(current_geo)
+        anim.setEasingCurve(QEasingCurve.OutQuad)
+        
+        # Enhanced active state style
+        label.setStyleSheet("""
+            color: #1a365d;
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            border: 3px solid #4a90e2;
+            border-radius: 12px;
+            margin: 5px 50px;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        """)
+        
+        anim.start()
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    calculator = AgeCalculator()
+    calculator.show()
+    sys.exit(app.exec_())
