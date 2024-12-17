@@ -2,8 +2,7 @@
 
 A modern and user-friendly age calculator built with Python and PyQt5. This application provides an intuitive way to calculate the exact age in years, months, and days from a selected birth date.
 
-![![Capture](https://github.com/user-attachments/assets/3d59ec55-5240-44f1-b150-509674e60fbe)](![Capture](https://github.com/user-attachments/assets/3d59ec55-5240-44f1-b150-509674e60fbe))
-
+![ss](https://github.com/user-attachments/assets/d370fa2f-5118-48d7-aa96-049f71f7ce5b)
 ## Features
 
 - Clean and modern user interface
